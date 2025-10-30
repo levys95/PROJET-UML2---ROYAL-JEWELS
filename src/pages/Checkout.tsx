@@ -126,6 +126,16 @@ export default function Checkout() {
 
       setOrderId(order.id);
 
+      // Vérifier si Stripe est configuré
+      const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      
+      if (!stripePublicKey) {
+        // Mode démo : paiement simulé
+        toast.info("Mode démo : paiement simulé automatiquement");
+        await handlePaymentSuccess(order.id);
+        return;
+      }
+
       // Appeler l'Edge Function pour créer Payment Intent
       const { data, error: functionError } = await supabase.functions.invoke(
         "create-payment-intent",
@@ -139,14 +149,9 @@ export default function Checkout() {
       );
 
       if (functionError || !data?.clientSecret) {
-        // Si Stripe n'est pas configuré, on simule le paiement
-        if (functionError?.message?.includes("Stripe n'est pas configuré")) {
-          toast.info("Mode démo : paiement simulé");
-          await handlePaymentSuccess(order.id);
-        } else {
-          toast.error("Erreur lors de l'initialisation du paiement");
-          setProcessing(false);
-        }
+        console.error("Payment intent error:", functionError);
+        toast.error("Erreur lors de l'initialisation du paiement");
+        setProcessing(false);
         return;
       }
 
