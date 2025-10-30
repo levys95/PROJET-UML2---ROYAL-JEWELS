@@ -1,11 +1,14 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Crown } from "lucide-react";
+import { ShoppingCart, Crown, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import crownPlaceholder from "@/assets/crown-placeholder.jpg";
 import necklacePlaceholder from "@/assets/necklace-placeholder.jpg";
 import ringPlaceholder from "@/assets/ring-placeholder.jpg";
+import { useFavorites } from "@/hooks/useFavorites";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 
 interface ProductCardProps {
   id: string;
@@ -28,6 +31,21 @@ export const ProductCard = ({
   stock_quantity,
   category 
 }: ProductCardProps) => {
+  const [userId, setUserId] = useState<string | undefined>();
+  const { isFavorite, toggleFavorite } = useFavorites(userId);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id);
+    });
+  }, []);
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(id);
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
@@ -55,6 +73,18 @@ export const ProductCard = ({
               alt={name}
               className="w-full h-full object-cover group-hover:scale-110 transition-royal"
             />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-3 left-3 bg-background/80 hover:bg-background backdrop-blur-sm"
+              onClick={handleFavoriteClick}
+            >
+              <Heart 
+                className={`h-5 w-5 transition-colors ${
+                  isFavorite(id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
+                }`}
+              />
+            </Button>
             {stock_quantity === 1 && (
               <Badge className="absolute top-3 right-3 gradient-gold">
                 <Crown className="h-3 w-3 mr-1" />

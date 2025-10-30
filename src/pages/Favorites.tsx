@@ -1,0 +1,118 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
+import { ProductCard } from "@/components/ProductCard";
+import { supabase } from "@/integrations/supabase/client";
+import { Heart } from "lucide-react";
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image_url?: string;
+  era?: string;
+  original_owner?: string;
+  stock_quantity: number;
+  categories?: {
+    name: string;
+  };
+}
+
+export default function Favorites() {
+  const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+      setUserId(user.id);
+      loadFavorites(user.id);
+    });
+  }, [navigate]);
+
+  const loadFavorites = async (uid: string) => {
+    const { data, error } = await supabase
+      .from("favorites")
+      .select(`
+        product_id,
+        products (
+          id,
+          name,
+          price,
+          image_url,
+          era,
+          original_owner,
+          stock_quantity,
+          categories (name)
+        )
+      `)
+      .eq("user_id", uid);
+
+    if (error) {
+      console.error("Error loading favorites:", error);
+    } else {
+      const favoriteProducts = data
+        .map(f => f.products)
+        .filter(p => p !== null) as unknown as Product[];
+      setProducts(favoriteProducts);
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-12 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex items-center gap-3 mb-8">
+          <Heart className="h-8 w-8 text-primary fill-primary" />
+          <h1 className="text-4xl font-serif font-bold gradient-royal bg-clip-text text-transparent">
+            Mes Favoris
+          </h1>
+        </div>
+
+        {products.length === 0 ? (
+          <div className="text-center py-12">
+            <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-20" />
+            <h2 className="text-2xl font-serif font-bold mb-2">Aucun favori</h2>
+            <p className="text-muted-foreground">
+              Ajoutez des produits à vos favoris en cliquant sur le cœur ❤️
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                image_url={product.image_url}
+                era={product.era}
+                original_owner={product.original_owner}
+                stock_quantity={product.stock_quantity}
+                category={product.categories?.name}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

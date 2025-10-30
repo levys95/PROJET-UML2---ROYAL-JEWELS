@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Crown, ShoppingCart, User, LogOut, Shield } from "lucide-react";
+import { Crown, ShoppingCart, User, LogOut, Shield, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User as SupabaseUser } from "@supabase/supabase-js";
@@ -118,6 +118,12 @@ export const Navbar = () => {
         <div className="flex items-center gap-3">
           {user ? (
             <>
+              <Link to="/favorites">
+                <Button variant="ghost" size="icon">
+                  <Heart className="h-5 w-5" />
+                </Button>
+              </Link>
+              
               <Link to="/cart">
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
