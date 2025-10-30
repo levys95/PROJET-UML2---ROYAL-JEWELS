@@ -34,7 +34,7 @@ export const Hero = () => {
             </Button>
           </Link>
           <Link to="/auth?mode=register">
-            <Button variant="outline" size="lg" className="text-lg px-8 border-white/30 text-white hover:bg-white/10">
+            <Button variant="outline-light" size="lg" className="text-lg px-8">
               Créer un Compte
             </Button>
           </Link>
