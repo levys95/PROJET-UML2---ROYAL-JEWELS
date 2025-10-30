@@ -148,6 +148,17 @@ All colors MUST be HSL.
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
   }
+
+  /* Text selection styling for better readability */
+  ::selection {
+    background-color: hsl(var(--accent) / 0.3);
+    color: hsl(var(--foreground));
+  }
+  
+  ::-moz-selection {
+    background-color: hsl(var(--accent) / 0.3);
+    color: hsl(var(--foreground));
+  }
 }
 
 @layer utilities {
