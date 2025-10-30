@@ -9,6 +9,19 @@ import { Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Session, User } from "@supabase/supabase-js";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string().trim().email("Email invalide").max(255, "Email trop long"),
+  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères").max(100, "Mot de passe trop long"),
+});
+
+const registerSchema = loginSchema.extend({
+  fullName: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères").max(100, "Nom trop long"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -42,51 +55,91 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+    try {
+      const formData = new FormData(e.currentTarget);
+      const data = {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+      };
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+      const result = loginSchema.safeParse(data);
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Connexion réussie!");
+      if (!result.success) {
+        const errors = result.error.errors.map(err => err.message).join(", ");
+        toast.error(errors);
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: result.data.email,
+        password: result.data.password,
+      });
+
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("Email ou mot de passe incorrect");
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.success("Connexion réussie!");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Une erreur est survenue lors de la connexion");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const fullName = formData.get("fullName") as string;
+    try {
+      const formData = new FormData(e.currentTarget);
+      const data = {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+        fullName: formData.get("fullName") as string,
+      };
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
+      const result = registerSchema.safeParse(data);
+
+      if (!result.success) {
+        const errors = result.error.errors.map(err => err.message).join(", ");
+        toast.error(errors);
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email: result.data.email,
+        password: result.data.password,
+        options: {
+          data: {
+            full_name: result.data.fullName,
+          },
+          emailRedirectTo: `${window.location.origin}/`,
         },
-        emailRedirectTo: `${window.location.origin}/`,
-      },
-    });
+      });
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Compte créé avec succès! Vérifiez votre email.");
+      if (error) {
+        if (error.message.includes("User already registered")) {
+          toast.error("Cet email est déjà enregistré");
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.success("Compte créé avec succès! Vérifiez votre email.");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Une erreur est survenue lors de l'inscription");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -166,9 +219,11 @@ export default function Auth() {
                     id="register-password"
                     name="password"
                     type="password"
-                    minLength={6}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Minimum 6 caractères
+                  </p>
                 </div>
                 <Button type="submit" variant="royal" className="w-full" disabled={loading}>
                   {loading ? "Création..." : "Créer un compte"}
