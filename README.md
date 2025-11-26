@@ -1,73 +1,148 @@
-# Welcome to your Lovable project
+# 💎 Royal Jewels – Boutique de bijoux en ligne
 
-## Project info
+Royal Jewels est une application e-commerce moderne dédiée à la vente de bijoux haut de gamme  
+(bracelets, colliers, bagues…) avec une identité visuelle “royale” (bleu profond, or, lumières élégantes).
 
-**URL**: https://lovable.dev/projects/827f8b81-d6db-4141-8ff9-2c38ac387457
+Ce projet a été réalisé dans le cadre d’un module UML / développement web à l’ESGI, en groupe de 3.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Fonctionnalités principales
 
-**Use Lovable**
+### Côté client
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/827f8b81-d6db-4141-8ff9-2c38ac387457) and start prompting.
+- Consultation du **catalogue** de bijoux
+- **Filtre** par catégorie / prix / nouveautés
+- **Recherche** de produits
+- **Fiche produit détaillée** : photos, description, prix, stock
+- Gestion du **panier** (ajout, suppression, modification de quantité)
+- Gestion des **favoris**
+- **Inscription / connexion** via Supabase Auth
+- **Passage de commande** avec paiement en ligne (Stripe)
+- Consultation de l’**historique de commandes**
+- Gestion du **profil utilisateur**
 
-Changes made via Lovable will be committed automatically to this repo.
+### Côté administrateur
 
-**Use your preferred IDE**
+- Accès à un **back-office sécurisé**
+- CRUD **produits** (création, modification, suppression, images)
+- Gestion des **catégories**
+- Consultation et mise à jour des **commandes** (statut)
+- Gestion des **utilisateurs** et de leurs rôles (client / admin / livreur…)
+- Accès à des **logs** et indicateurs (statistiques de base)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🧱 Stack technique
 
-Follow these steps:
+Front-end :
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- ⚛️ **React** + **TypeScript**
+- ⚡ **Vite**
+- 🎨 **Tailwind CSS** + **shadcn-ui** pour les composants
+- 🧭 **React Router** pour le routage
+- 📡 **TanStack Query (React Query)** pour la gestion des requêtes & cache
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Back-end / Data :
 
-# Step 3: Install the necessary dependencies.
-npm i
+- 🐘 **Supabase** (PostgreSQL + Auth + API REST + RLS) – dossier [`supabase/`](./supabase)
+- (Optionnel) **Fonctions Edge** pour l’intégration Stripe
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Paiement :
+
+- 💳 **Stripe** (PaymentIntent, client JS)
+
+Outils :
+
+- 🧪 ESLint, TypeScript config
+- 🧵 Git / GitHub
+
+---
+
+## 🗂 Structure du projet
+
+```text
+royal-jewels-9bca2479/
+├─ public/           # Assets statiques (icônes, favicons, images publiques)
+├─ src/              # Code front React/TS
+│  ├─ components/    # Composants réutilisables (UI, layouts…)
+│  ├─ pages/         # Pages (catalogue, produit, panier, profil, admin…)
+│  ├─ hooks/         # Hooks personnalisés (auth, produits, panier…)
+│  ├─ lib/           # Clients API, helpers, config Supabase/Stripe
+│  ├─ routes/        # Définition des routes
+│  └─ main.tsx       # Point d’entrée React
+├─ supabase/         # Migrations SQL, tables, politiques RLS, fonctions
+├─ .env.example      # Exemple de configuration des variables d’environnement
+├─ package.json
+├─ tailwind.config.ts
+└─ vite.config.ts
+```
+🚀 Démarrage rapide (local)
+1. Prérequis
+
+Node.js (version récente, 18+ conseillé)
+
+npm ou bun
+
+Un compte Supabase
+
+Un compte Stripe (mode test)
+
+2. Cloner le dépôt
+```text
+git clone https://github.com/levys95/royal-jewels-9bca2479.git
+cd royal-jewels-9bca2479
+```
+3. Installer les dépendances
+```text
+npm install
+# ou
+bun install
+```
+4. Configuration des variables d’environnement
+
+Dupliquer le fichier :
+```
+cp .env.example .env
+```
+5. Lancer le projet en développement
+```
 npm run dev
 ```
+L’application sera disponible sur une URL du type :
+```
+http://localhost:5173
+```
+6. Build de production
+```
+npm run build
+npm run preview
+```
+🔐 Sécurité & Rôles
 
-**Edit a file directly in GitHub**
+    Authentification gérée par Supabase Auth (email / mot de passe)
+    Row Level Security (RLS) activée sur les tables sensibles
+    Rôles appliqués dans la BDD (ex : client, admin, livreur)
+    Stripe gère les données de cartes bancaires (aucune carte ne passe par notre serveur)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+🧪 Tests manuels (recette)
 
-**Use GitHub Codespaces**
+Quelques cas testés :
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+    Navigation entre les pages (Accueil, Catalogue, Produit, Panier, Profil, Admin)
+    Inscription + Connexion + Déconnexion
+    Ajout / suppression de produits dans le panier
+    Ajout / suppression de favoris
+    Passage d’une commande complète (Stripe en mode test)
+    Gestion des produits et catégories côté admin
+    Changement de statut de commande (en attente → payée → expédiée…)
 
-## What technologies are used for this project?
 
-This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```text
+👥 Crédits
 
-## How can I deploy this project?
+Projet réalisé par un groupe de 3 étudiants à l’ESGI :
 
-Simply open [Lovable](https://lovable.dev/projects/827f8b81-d6db-4141-8ff9-2c38ac387457) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+SABAK Lévy - BEDI Bénie Marie Emmanuella - KOUDJINA Bill-Axel
+```
